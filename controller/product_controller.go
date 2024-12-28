@@ -14,6 +14,12 @@ type ProductController struct {
 	productUsecase usecase.ProductUsecase
 }
 
+const (
+	ErrorIdCannotBeNull   = "Product id cannot be null"
+	ErrorIdNeedToBeNumber = "Product id need to be a number"
+	ErrorProductNotFound  = "Product not found"
+)
+
 func NewProductController(usecase usecase.ProductUsecase) ProductController {
 	return ProductController{
 		productUsecase: usecase,
@@ -48,7 +54,7 @@ func (p *ProductController) GetProductById(ctx *gin.Context) {
 
 	if id == "" {
 		response := model.Response{
-			Message: "Id do produto não pode ser nulo",
+			Message: ErrorIdCannotBeNull,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -58,7 +64,7 @@ func (p *ProductController) GetProductById(ctx *gin.Context) {
 
 	if err != nil {
 		response := model.Response{
-			Message: "Id do produto precisa ser um número",
+			Message: ErrorIdNeedToBeNumber,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -72,7 +78,7 @@ func (p *ProductController) GetProductById(ctx *gin.Context) {
 
 	if product == nil {
 		response := model.Response{
-			Message: "Produto não encontrado na base de dados",
+			Message: ErrorProductNotFound,
 		}
 		ctx.JSON(http.StatusNotFound, response)
 		return
@@ -87,7 +93,7 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 
 	if id == "" {
 		response := model.Response{
-			Message: "Id do produto não pode ser nulo",
+			Message: ErrorIdCannotBeNull,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -97,7 +103,7 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 
 	if err != nil {
 		response := model.Response{
-			Message: "Id do produto precisa ser um número",
+			Message: ErrorIdNeedToBeNumber,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -117,7 +123,7 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 	}
 	if updatedProduct == nil {
 		response := model.Response{
-			Message: "Produto não encontrado na base de dados",
+			Message: ErrorProductNotFound,
 		}
 		ctx.JSON(http.StatusNotFound, response)
 		return
@@ -131,7 +137,7 @@ func (p *ProductController) DeleteProduct(ctx *gin.Context) {
 
 	if id == "" {
 		response := model.Response{
-			Message: "Id do produto não pode ser nulo",
+			Message: ErrorIdCannotBeNull,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -141,7 +147,7 @@ func (p *ProductController) DeleteProduct(ctx *gin.Context) {
 
 	if err != nil {
 		response := model.Response{
-			Message: "Id do produto precisa ser um número",
+			Message: ErrorIdNeedToBeNumber,
 		}
 		ctx.JSON(http.StatusBadRequest, response)
 		return
@@ -155,13 +161,13 @@ func (p *ProductController) DeleteProduct(ctx *gin.Context) {
 
 	if product == nil {
 		response := model.Response{
-			Message: "Produto não encontrado na base de dados",
+			Message: ErrorProductNotFound,
 		}
 		ctx.JSON(http.StatusNotFound, response)
 		return
 	}
 	response := model.Response{
-		Message: "Produto deletado com sucesso",
+		Message: "Product successfully deleted",
 	}
 	ctx.JSON(http.StatusOK, response)
 
