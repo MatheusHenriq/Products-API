@@ -18,10 +18,13 @@ func main() {
 	}
 	//camada de repository
 	ProductRepository := repository.NewProductRepository(dbConnection)
+	UserRepository := repository.NewUserRepository(dbConnection)
 	//Camada usecase
 	ProductUsecase := usecase.NewProductUsecase(ProductRepository)
+	UserUsecase := usecase.NewUserUsecase(UserRepository)
 	//Camada de controller
 	ProductController := controller.NewProductController(ProductUsecase)
+	UserController := controller.NewUserController(UserUsecase)
 	server.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"message": "pong"})
 	})
@@ -32,5 +35,6 @@ func main() {
 	server.PUT("/product/:productId", ProductController.UpdateProductById)
 	server.DELETE("/product/:productId", ProductController.DeleteProduct)
 
+	server.POST("create/user", UserController.CreateUser)
 	server.Run(":8000")
 }

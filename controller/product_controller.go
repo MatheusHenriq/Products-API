@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"go-api/model"
 	"go-api/usecase"
 	"net/http"
@@ -115,7 +114,6 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	fmt.Printf("id = %d", productId)
 	updatedProduct, err := p.productUsecase.UpdateProductById(product, productId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
