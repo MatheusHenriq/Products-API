@@ -21,13 +21,13 @@ func (ur *UserRepository) CreateUser(user model.User) (int, error) {
 		"(name,email,password)" +
 		" VALUES ($1,$2,$3) RETURNING id")
 	if err != nil {
-		fmt.Println(err)
+
 		return 0, err
 	}
 
 	err = query.QueryRow(user.Name, user.Email, user.Password).Scan(&id)
 	if err != nil {
-		fmt.Println(strings.Split(err.Error(), ":"))
+		fmt.Println(strings.Split(err.Error(), ""))
 		return 0, err
 	}
 	query.Close()
