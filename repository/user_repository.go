@@ -21,7 +21,6 @@ func (ur *UserRepository) CreateUser(user model.User) (int, error) {
 		"(name,email,password)" +
 		" VALUES ($1,$2,$3) RETURNING id")
 	if err != nil {
-
 		return 0, err
 	}
 
@@ -32,4 +31,24 @@ func (ur *UserRepository) CreateUser(user model.User) (int, error) {
 	}
 	query.Close()
 	return id, nil
+}
+
+func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
+	query, err := ur.connection.Prepare("DELETE FROM users" +
+		" WHERE email = $1 and password = $2 RETURNING id")
+
+	var userData model.User
+	if err != nil {
+		return nil, err
+	}
+	err = query.QueryRow(user.Email, user.Password).Scan(&userData.ID)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	query.Close()
+	return &userData, nil
 }

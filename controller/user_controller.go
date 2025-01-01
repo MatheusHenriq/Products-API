@@ -110,3 +110,31 @@ func (u *UserController) CreateUser(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, insertedUser)
 }
+
+func (u *UserController) DeleteUser(ctx *gin.Context) {
+	var user model.User
+	err := ctx.BindJSON(&user)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	userData, err := u.userUsecase.DeleteUser(user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	if userData == nil {
+		response := model.Response{
+			Message: "Deletion failed, please verify e-mail and password",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := model.Response{
+		Message: "User successfully deleted",
+	}
+	ctx.JSON(http.StatusOK, response)
+
+}
