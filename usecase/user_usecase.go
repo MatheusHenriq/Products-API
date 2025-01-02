@@ -13,13 +13,13 @@ func NewUserUsecase(repo repository.UserRepository) UserUsecase {
 	return UserUsecase{repository: repo}
 }
 
-func (uu *UserUsecase) CreateUser(user model.User) (model.User, error) {
+func (uu *UserUsecase) CreateUser(user model.User) error {
 	userId, err := uu.repository.CreateUser(user)
 	if err != nil {
-		return model.User{}, err
+		return err
 	}
 	user.ID = userId
-	return user, nil
+	return nil
 }
 
 func (uu *UserUsecase) DeleteUser(user model.User) (*model.User, error) {

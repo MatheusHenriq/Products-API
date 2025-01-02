@@ -95,7 +95,7 @@ func (u *UserController) CreateUser(ctx *gin.Context) {
 		Password: rawData["password"].(string),
 	}
 
-	insertedUser, err := u.userUsecase.CreateUser(user)
+	err = u.userUsecase.CreateUser(user)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key") {
 			response := model.Response{
@@ -107,8 +107,10 @@ func (u *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
-
-	ctx.JSON(http.StatusCreated, insertedUser)
+	response := model.Response{
+		Message: "Account successfully created",
+	}
+	ctx.JSON(http.StatusCreated, response)
 }
 
 func (u *UserController) DeleteUser(ctx *gin.Context) {

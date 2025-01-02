@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"go-api/model"
 	"strings"
@@ -11,12 +13,22 @@ type UserRepository struct {
 	connection *sql.DB
 }
 
+func encryptPassword(password string) string {
+	hash := md5.New()
+	defer hash.Reset()
+	hash.Write([]byte(password))
+	password = hex.EncodeToString(hash.Sum(nil))
+	return password
+}
+
 func NewUserRepository(connection *sql.DB) UserRepository {
 	return UserRepository{connection: connection}
 }
 
 func (ur *UserRepository) CreateUser(user model.User) (int, error) {
 	var id int
+
+	var password = encryptPassword(user.Password)
 	query, err := ur.connection.Prepare("INSERT INTO users" +
 		"(name,email,password)" +
 		" VALUES ($1,$2,$3) RETURNING id")
@@ -24,7 +36,7 @@ func (ur *UserRepository) CreateUser(user model.User) (int, error) {
 		return 0, err
 	}
 
-	err = query.QueryRow(user.Name, user.Email, user.Password).Scan(&id)
+	err = query.QueryRow(user.Name, user.Email, password).Scan(&id)
 	if err != nil {
 		fmt.Println(strings.Split(err.Error(), ""))
 		return 0, err
