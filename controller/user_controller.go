@@ -150,7 +150,7 @@ func (u *UserController) LogIn(ctx *gin.Context) {
 		return
 	}
 
-	userData, err := u.userUsecase.LogIn(user)
+	userData, token, err := u.userUsecase.LogIn(user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -162,9 +162,13 @@ func (u *UserController) LogIn(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-	response := model.Response{
-		Message: "User successfully loggedIn",
-	}
-	ctx.JSON(http.StatusOK, response)
+
+	ctx.Header("Authorization", token)
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"name":    userData.Name,
+		"email":   userData.Email,
+		"isAdmin": userData.IsAdmin,
+		"token":   token,
+	})
 
 }
