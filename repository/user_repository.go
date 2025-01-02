@@ -50,10 +50,11 @@ func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
 		" WHERE email = $1 and password = $2 RETURNING id")
 
 	var userData model.User
+	password := encryptPassword(user.Password)
 	if err != nil {
 		return nil, err
 	}
-	err = query.QueryRow(user.Email, user.Password).Scan(&userData.ID)
+	err = query.QueryRow(user.Email, password).Scan(&userData.ID)
 	if err != nil {
 		fmt.Println(err)
 		if err == sql.ErrNoRows {
@@ -62,5 +63,25 @@ func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
 		return nil, err
 	}
 	query.Close()
+	return &userData, nil
+}
+
+func (ur *UserRepository) LogIn(user model.User) (*model.User, error) {
+	query, err := ur.connection.Prepare("select id,name,email,is_admin from users where email = $1 and password = $2")
+	if err != nil {
+		return nil, err
+	}
+	var userData model.User
+	var password = encryptPassword(user.Password)
+	err = query.QueryRow(user.Email, password).Scan(&userData.ID, &userData.Name, &userData.Email, &userData.IsAdmin)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	query.Close()
+
 	return &userData, nil
 }

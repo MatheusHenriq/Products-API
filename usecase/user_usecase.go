@@ -29,3 +29,11 @@ func (uu *UserUsecase) DeleteUser(user model.User) (*model.User, error) {
 	}
 	return userData, nil
 }
+
+func (uu *UserUsecase) LogIn(user model.User) (*model.User, error) {
+	userData, err := uu.repository.LogIn(user)
+	if err != nil {
+		return userData, err
+	}
+	return userData, nil
+}

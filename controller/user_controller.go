@@ -140,3 +140,31 @@ func (u *UserController) DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 
 }
+
+func (u *UserController) LogIn(ctx *gin.Context) {
+	var user model.User
+	err := ctx.BindJSON(&user)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	userData, err := u.userUsecase.LogIn(user)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	if userData == nil {
+		response := model.Response{
+			Message: "Email or password wrong",
+		}
+		ctx.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := model.Response{
+		Message: "User successfully loggedIn",
+	}
+	ctx.JSON(http.StatusOK, response)
+
+}

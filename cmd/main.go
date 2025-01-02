@@ -35,8 +35,9 @@ func main() {
 	server.PUT("/product/:productId", ProductController.UpdateProductById)
 	server.DELETE("/product/:productId", ProductController.DeleteProduct)
 
-	server.POST("create/user", UserController.CreateUser)
-	server.DELETE("delete/user", UserController.DeleteUser)
+	server.POST("/create/user", UserController.CreateUser)
+	server.DELETE("/delete/user", UserController.DeleteUser)
+	server.POST("/signin", UserController.LogIn)
 
 	server.Run(":8000")
 }
