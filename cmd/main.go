@@ -3,6 +3,7 @@ package main
 import (
 	"go-api/controller"
 	"go-api/db"
+	"go-api/model"
 	"go-api/repository"
 	"go-api/usecase"
 
@@ -29,14 +30,14 @@ func main() {
 		ctx.JSON(200, gin.H{"message": "pong"})
 	})
 
-	server.GET("/products", ProductController.GetProducts)
-	server.POST("/product", ProductController.CreateProduct)
-	server.GET("/product/:productId", ProductController.GetProductById)
-	server.PUT("/product/:productId", ProductController.UpdateProductById)
-	server.DELETE("/product/:productId", ProductController.DeleteProduct)
+	server.GET("/products", model.VerifyTokenMiddleware, ProductController.GetProducts)
+	server.POST("/product", model.VerifyTokenMiddleware, ProductController.CreateProduct)
+	server.GET("/product/:productId", model.VerifyTokenMiddleware, ProductController.GetProductById)
+	server.PUT("/product/:productId", model.VerifyTokenMiddleware, ProductController.UpdateProductById)
+	server.DELETE("/product/:productId", model.VerifyTokenMiddleware, ProductController.DeleteProduct)
 
 	server.POST("/create/user", UserController.CreateUser)
-	server.DELETE("/delete/user", UserController.DeleteUser)
+	server.DELETE("/delete/user", model.VerifyTokenMiddleware, UserController.DeleteUser)
 	server.POST("/signin", UserController.LogIn)
 
 	server.Run(":8000")

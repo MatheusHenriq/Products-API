@@ -2,7 +2,6 @@ package controller
 
 import (
 	"go-api/model"
-	"go-api/repository"
 	"go-api/usecase"
 	"net/http"
 	"regexp"
@@ -122,14 +121,7 @@ func (u *UserController) DeleteUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	err = repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
-	if err != nil {
-		response := model.Response{
-			Message: "Invalid token",
-		}
-		ctx.JSON(http.StatusUnauthorized, response)
-		return
-	}
+
 	userData, err := u.userUsecase.DeleteUser(user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)

@@ -6,11 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"go-api/model"
-	"os"
 	"strings"
-	"time"
-
-	"github.com/golang-jwt/jwt"
 )
 
 type UserRepository struct {
@@ -27,53 +23,6 @@ func encryptPassword(password string) string {
 	hash.Write([]byte(password))
 	password = hex.EncodeToString(hash.Sum(nil))
 	return password
-}
-
-func generateToken(user model.User) (string, error) {
-
-	secret := os.Getenv(JWT_SECRET_KEY)
-	claims := jwt.MapClaims{
-		"id":      user.ID,
-		"email":   user.Email,
-		"name":    user.Name,
-		"isAdmin": user.IsAdmin,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(secret))
-	if err != nil {
-
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func removeBearerPrefix(token string) string {
-	if strings.HasPrefix(token, "Bearer ") {
-		token = strings.TrimPrefix("Bearer ", token)
-	}
-	return token
-}
-
-// I prefer to return error, because if error == nil it means that token is correct, if occurs an error, it will be an invalid token
-func VerifyToken(tokenValue string) error {
-	secret := os.Getenv(JWT_SECRET_KEY)
-	token, err := jwt.Parse(removeBearerPrefix(tokenValue), func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
-			return []byte(secret), nil
-		}
-		return nil, fmt.Errorf("Invalid token")
-	})
-
-	if err != nil {
-		return err
-	}
-
-	_, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return err
-	}
-	return nil
 }
 
 func NewUserRepository(connection *sql.DB) UserRepository {
@@ -138,7 +87,7 @@ func (ur *UserRepository) LogIn(user model.User) (*model.User, string, error) {
 		return nil, "", err
 	}
 	query.Close()
-	token, err := generateToken(userData)
+	token, err := model.GenerateToken(userData)
 	if err != nil {
 		return nil, "", err
 	}
