@@ -2,6 +2,7 @@ package controller
 
 import (
 	"go-api/model"
+	"go-api/repository"
 	"go-api/usecase"
 	"net/http"
 	"strconv"
@@ -26,6 +27,14 @@ func NewProductController(usecase usecase.ProductUsecase) ProductController {
 }
 
 func (p *ProductController) GetProducts(ctx *gin.Context) {
+	err := repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 	products, err := p.productUsecase.GetProducts()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
@@ -38,6 +47,14 @@ func (p *ProductController) CreateProduct(ctx *gin.Context) {
 	err := ctx.BindJSON(&product)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+	err = repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
 		return
 	}
 	insertedProduct, err := p.productUsecase.CreateProducts(product)
@@ -68,7 +85,14 @@ func (p *ProductController) GetProductById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-
+	err = repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 	product, err := p.productUsecase.GetProductById(productId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
@@ -114,6 +138,14 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
+	err = repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 	updatedProduct, err := p.productUsecase.UpdateProductById(product, productId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
@@ -150,7 +182,14 @@ func (p *ProductController) DeleteProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-
+	err = repository.VerifyToken(ctx.Request.Header.Get("Authorization"))
+	if err != nil {
+		response := model.Response{
+			Message: "Invalid token",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
 	product, err := p.productUsecase.DeleteProduct(productId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)

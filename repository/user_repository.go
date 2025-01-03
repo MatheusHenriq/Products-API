@@ -29,11 +29,7 @@ func encryptPassword(password string) string {
 	return password
 }
 
-func NewUserRepository(connection *sql.DB) UserRepository {
-	return UserRepository{connection: connection}
-}
-
-func GenerateToken(user model.User) (string, error) {
+func generateToken(user model.User) (string, error) {
 
 	secret := os.Getenv(JWT_SECRET_KEY)
 	claims := jwt.MapClaims{
@@ -50,6 +46,38 @@ func GenerateToken(user model.User) (string, error) {
 		return "", err
 	}
 	return tokenString, nil
+}
+
+func removeBearerPrefix(token string) string {
+	if strings.HasPrefix(token, "Bearer ") {
+		token = strings.TrimPrefix("Bearer ", token)
+	}
+	return token
+}
+
+// I prefer to return error, because if error == nil it means that token is correct, if occurs an error, it will be an invalid token
+func VerifyToken(tokenValue string) error {
+	secret := os.Getenv(JWT_SECRET_KEY)
+	token, err := jwt.Parse(removeBearerPrefix(tokenValue), func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
+			return []byte(secret), nil
+		}
+		return nil, fmt.Errorf("Invalid token")
+	})
+
+	if err != nil {
+		return err
+	}
+
+	_, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return err
+	}
+	return nil
+}
+
+func NewUserRepository(connection *sql.DB) UserRepository {
+	return UserRepository{connection: connection}
 }
 
 func (ur *UserRepository) CreateUser(user model.User) (int, error) {
@@ -81,6 +109,7 @@ func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = query.QueryRow(user.Email, password).Scan(&userData.ID)
 	if err != nil {
 		fmt.Println(err)
@@ -109,7 +138,7 @@ func (ur *UserRepository) LogIn(user model.User) (*model.User, string, error) {
 		return nil, "", err
 	}
 	query.Close()
-	token, err := GenerateToken(userData)
+	token, err := generateToken(userData)
 	if err != nil {
 		return nil, "", err
 	}
