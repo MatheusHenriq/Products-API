@@ -26,12 +26,15 @@ func NewProductController(usecase usecase.ProductUsecase) ProductController {
 }
 
 func (p *ProductController) GetProducts(ctx *gin.Context) {
-	uuid, err := model.GetUuid(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	uuid, exists := ctx.Get(model.UserUUIDKey)
+	if !exists {
+		response := model.Response{
+			Message: "User uuid not found",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
 		return
 	}
-	products, err := p.productUsecase.GetProducts(uuid)
+	products, err := p.productUsecase.GetProducts(uuid.(string))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -45,12 +48,15 @@ func (p *ProductController) CreateProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	uuid, err := model.GetUuid(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+	uuid, exists := ctx.Get(model.UserUUIDKey)
+	if !exists {
+		response := model.Response{
+			Message: "User uuid not found",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
 		return
 	}
-	insertedProduct, err := p.productUsecase.CreateProducts(product, uuid)
+	insertedProduct, err := p.productUsecase.CreateProducts(product, uuid.(string))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -78,8 +84,15 @@ func (p *ProductController) GetProductById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	product, err := p.productUsecase.GetProductById(productId)
+	uuid, exists := ctx.Get(model.UserUUIDKey)
+	if !exists {
+		response := model.Response{
+			Message: "User uuid not found",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+	product, err := p.productUsecase.GetProductById(productId, uuid.(string))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -124,8 +137,15 @@ func (p *ProductController) UpdateProductById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-
-	updatedProduct, err := p.productUsecase.UpdateProductById(product, productId)
+	uuid, exists := ctx.Get(model.UserUUIDKey)
+	if !exists {
+		response := model.Response{
+			Message: "User uuid not found",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+	updatedProduct, err := p.productUsecase.UpdateProductById(product, productId, uuid.(string))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -161,8 +181,15 @@ func (p *ProductController) DeleteProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	product, err := p.productUsecase.DeleteProduct(productId)
+	uuid, exists := ctx.Get(model.UserUUIDKey)
+	if !exists {
+		response := model.Response{
+			Message: "User uuid not found",
+		}
+		ctx.JSON(http.StatusUnauthorized, response)
+		return
+	}
+	product, err := p.productUsecase.DeleteProduct(productId, uuid.(string))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -26,24 +26,24 @@ func (pu *ProductUsecase) CreateProducts(product model.Product, uuid string) (mo
 	return product, nil
 }
 
-func (pu *ProductUsecase) GetProductById(id_product int) (*model.Product, error) {
-	product, err := pu.repository.GetProductById(id_product)
+func (pu *ProductUsecase) GetProductById(id_product int, uuid string) (*model.Product, error) {
+	product, err := pu.repository.GetProductById(id_product, uuid)
 	if err != nil {
 		return nil, err
 	}
 	return product, nil
 }
 
-func (pu *ProductUsecase) UpdateProductById(p model.Product, pId int) (*model.Product, error) {
-	product, err := pu.repository.UpdateProductById(p, pId)
+func (pu *ProductUsecase) UpdateProductById(p model.Product, pId int, uuid string) (*model.Product, error) {
+	product, err := pu.repository.UpdateProductById(p, pId, uuid)
 	if err != nil {
 		return nil, err
 	}
 	return product, nil
 }
 
-func (pu *ProductUsecase) DeleteProduct(pId int) (*model.Product, error) {
-	product, err := pu.repository.DeleteProduct(pId)
+func (pu *ProductUsecase) DeleteProduct(pId int, uuid string) (*model.Product, error) {
+	product, err := pu.repository.DeleteProduct(pId, uuid)
 	if err != nil {
 		return nil, err
 	}

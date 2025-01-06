@@ -24,6 +24,7 @@ func main() {
 	ProductUsecase := usecase.NewProductUsecase(ProductRepository)
 	UserUsecase := usecase.NewUserUsecase(UserRepository)
 	//Camada de controller
+
 	ProductController := controller.NewProductController(ProductUsecase)
 	UserController := controller.NewUserController(UserUsecase)
 	server.GET("/ping", func(ctx *gin.Context) {

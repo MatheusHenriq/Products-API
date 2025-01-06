@@ -11,9 +11,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var (
-	JWT_SECRET_KEY = "JWT_SECRET_KEY"
-)
+const JWT_SECRET_KEY = "JWT_SECRET_KEY"
+const UserUUIDKey = "userUUID"
 
 func GenerateToken(user User) (string, error) {
 
@@ -34,25 +33,25 @@ func GenerateToken(user User) (string, error) {
 	return tokenString, nil
 }
 
-func GetUuid(c *gin.Context) (string, error) {
+func getUuid(c *gin.Context) string {
 	tokenString := getCurrentToken(c)
 	token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse token: %w", err)
+		return ""
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("failed to cast claims to MapClaims")
+		return ""
 	}
 	uuid, ok := claims["uuid"].(string)
 	if !ok {
-		return "", fmt.Errorf("uuid field not found or not a string")
+		return ""
 	}
-	return uuid, nil
+
+	return uuid
 
 }
 func getCurrentToken(c *gin.Context) string {
-
 	tokenValue := removeBearerPrefix(c.Request.Header.Get("Authorization"))
 	return tokenValue
 }
@@ -80,6 +79,8 @@ func VerifyTokenMiddleware(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	c.Set(UserUUIDKey, getUuid(c))
+	c.Next()
 }
 
 func removeBearerPrefix(token string) string {
