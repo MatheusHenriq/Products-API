@@ -2,6 +2,7 @@ package repository
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
@@ -17,6 +18,18 @@ var (
 	JWT_SECRET_KEY = "JWT_SECRET_KEY"
 )
 
+func GenerateUserID() string {
+	randomBytes := make([]byte, 4)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
+	}
+
+	randomHex := hex.EncodeToString(randomBytes)
+
+	return randomHex[:7]
+}
+
 func encryptPassword(password string) string {
 	hash := md5.New()
 	defer hash.Reset()
@@ -29,24 +42,24 @@ func NewUserRepository(connection *sql.DB) UserRepository {
 	return UserRepository{connection: connection}
 }
 
-func (ur *UserRepository) CreateUser(user model.User) (int, error) {
+func (ur *UserRepository) CreateUser(user model.User) error {
+	uuid := GenerateUserID()
 	var id int
-
 	var password = encryptPassword(user.Password)
 	query, err := ur.connection.Prepare("INSERT INTO users" +
-		"(name,email,password)" +
-		" VALUES ($1,$2,$3) RETURNING id")
+		"(name, email, password, uuid)" +
+		" VALUES ($1,$2,$3,$4) RETURNING id")
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	err = query.QueryRow(user.Name, user.Email, password).Scan(&id)
+	err = query.QueryRow(user.Name, user.Email, password, uuid).Scan(&id)
 	if err != nil {
 		fmt.Println(strings.Split(err.Error(), ""))
-		return 0, err
+		return err
 	}
 	query.Close()
-	return id, nil
+	return nil
 }
 
 func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
@@ -59,7 +72,7 @@ func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
 		return nil, err
 	}
 
-	err = query.QueryRow(user.Email, password).Scan(&userData.ID)
+	err = query.QueryRow(user.Email, password).Scan(&userData.Uuid)
 	if err != nil {
 		fmt.Println(err)
 		if err == sql.ErrNoRows {
@@ -72,13 +85,13 @@ func (ur *UserRepository) DeleteUser(user model.User) (*model.User, error) {
 }
 
 func (ur *UserRepository) LogIn(user model.User) (*model.User, string, error) {
-	query, err := ur.connection.Prepare("select id,name,email,is_admin from users where email = $1 and password = $2")
+	query, err := ur.connection.Prepare("select uuid,name,email,is_admin from users where email = $1 and password = $2")
 	if err != nil {
 		return nil, "", err
 	}
 	var userData model.User
 	var password = encryptPassword(user.Password)
-	err = query.QueryRow(user.Email, password).Scan(&userData.ID, &userData.Name, &userData.Email, &userData.IsAdmin)
+	err = query.QueryRow(user.Email, password).Scan(&userData.Uuid, &userData.Name, &userData.Email, &userData.IsAdmin)
 	if err != nil {
 		fmt.Println(err)
 		if err == sql.ErrNoRows {

@@ -14,11 +14,10 @@ func NewUserUsecase(repo repository.UserRepository) UserUsecase {
 }
 
 func (uu *UserUsecase) CreateUser(user model.User) error {
-	userId, err := uu.repository.CreateUser(user)
+	err := uu.repository.CreateUser(user)
 	if err != nil {
 		return err
 	}
-	user.ID = userId
 	return nil
 }
 

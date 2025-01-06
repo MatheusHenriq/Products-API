@@ -16,15 +16,21 @@ func NewProductRepository(connection *sql.DB) ProductRepository {
 	}
 }
 
-func (pr *ProductRepository) GetProducts() ([]model.Product, error) {
-	query := "SELECT id, product_name, price FROM product ORDER BY id"
-	rows, err := pr.connection.Query(query)
+func (pr *ProductRepository) GetProducts(uuid string) ([]model.Product, error) {
+
+	query, err := pr.connection.Prepare("SELECT id, product_name, price FROM product WHERE uuid = $1 ORDER BY id")
+	if err != nil {
+		fmt.Println(err)
+		return []model.Product{}, err
+	}
+	rows, err := query.Query(uuid)
+
 	if err != nil {
 		fmt.Println(err)
 		return []model.Product{}, err
 	}
 
-	var productList []model.Product
+	productList := []model.Product{}
 	var productObj model.Product
 
 	for rows.Next() {
@@ -43,16 +49,16 @@ func (pr *ProductRepository) GetProducts() ([]model.Product, error) {
 	return productList, nil
 }
 
-func (pr *ProductRepository) CreateProduct(product model.Product) (int, error) {
+func (pr *ProductRepository) CreateProduct(product model.Product, uuid string) (int, error) {
 	var id int
 	query, err := pr.connection.Prepare("INSERT INTO product" +
-		"(product_name,price)" +
-		" VALUES ($1,$2) RETURNING id")
+		"(product_name,price,uuid)" +
+		" VALUES ($1,$2, $3) RETURNING id")
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
 	}
-	err = query.QueryRow(product.Name, product.Price).Scan(&id)
+	err = query.QueryRow(product.Name, product.Price, uuid).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err

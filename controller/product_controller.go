@@ -26,8 +26,12 @@ func NewProductController(usecase usecase.ProductUsecase) ProductController {
 }
 
 func (p *ProductController) GetProducts(ctx *gin.Context) {
-
-	products, err := p.productUsecase.GetProducts()
+	uuid, err := model.GetUuid(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	products, err := p.productUsecase.GetProducts(uuid)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 	}
@@ -41,8 +45,12 @@ func (p *ProductController) CreateProduct(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-
-	insertedProduct, err := p.productUsecase.CreateProducts(product)
+	uuid, err := model.GetUuid(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	insertedProduct, err := p.productUsecase.CreateProducts(product, uuid)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

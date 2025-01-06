@@ -13,12 +13,12 @@ func NewProductUsecase(repo repository.ProductRepository) ProductUsecase {
 	return ProductUsecase{repository: repo}
 }
 
-func (pu *ProductUsecase) GetProducts() ([]model.Product, error) {
-	return pu.repository.GetProducts()
+func (pu *ProductUsecase) GetProducts(uuid string) ([]model.Product, error) {
+	return pu.repository.GetProducts(uuid)
 }
 
-func (pu *ProductUsecase) CreateProducts(product model.Product) (model.Product, error) {
-	productId, err := pu.repository.CreateProduct(product)
+func (pu *ProductUsecase) CreateProducts(product model.Product, uuid string) (model.Product, error) {
+	productId, err := pu.repository.CreateProduct(product, uuid)
 	if err != nil {
 		return model.Product{}, err
 	}

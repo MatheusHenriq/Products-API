@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
@@ -19,11 +19,11 @@ func GenerateToken(user User) (string, error) {
 
 	secret := os.Getenv(JWT_SECRET_KEY)
 	claims := jwt.MapClaims{
-		"id":      user.ID,
 		"email":   user.Email,
 		"name":    user.Name,
+		"uuid":    user.Uuid,
 		"isAdmin": user.IsAdmin,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secret))
@@ -34,9 +34,31 @@ func GenerateToken(user User) (string, error) {
 	return tokenString, nil
 }
 
+func GetUuid(c *gin.Context) (string, error) {
+	tokenString := getCurrentToken(c)
+	token, _, err := jwt.NewParser().ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return "", fmt.Errorf("Failed to parse token: %w", err)
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("failed to cast claims to MapClaims")
+	}
+	uuid, ok := claims["uuid"].(string)
+	if !ok {
+		return "", fmt.Errorf("uuid field not found or not a string")
+	}
+	return uuid, nil
+
+}
+func getCurrentToken(c *gin.Context) string {
+
+	tokenValue := removeBearerPrefix(c.Request.Header.Get("Authorization"))
+	return tokenValue
+}
 func VerifyTokenMiddleware(c *gin.Context) {
 	secret := os.Getenv(JWT_SECRET_KEY)
-	tokenValue := removeBearerPrefix(c.Request.Header.Get("Authorization"))
+	tokenValue := getCurrentToken(c)
 	token, err := jwt.Parse(removeBearerPrefix(tokenValue), func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
 			return []byte(secret), nil
