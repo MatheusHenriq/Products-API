@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"go-api/model"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserRepository struct {
@@ -105,4 +107,13 @@ func (ur *UserRepository) LogIn(user model.User) (*model.User, string, error) {
 		return nil, "", err
 	}
 	return &userData, token, nil
+}
+
+func (ur *UserRepository) RefreshToken(c *gin.Context) (string, string, error) {
+	t, rt, err := model.RefreshToken(c)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+	return t, rt, nil
 }

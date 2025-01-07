@@ -3,6 +3,8 @@ package usecase
 import (
 	"go-api/model"
 	"go-api/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserUsecase struct {
@@ -35,4 +37,12 @@ func (uu *UserUsecase) LogIn(user model.User) (*model.User, string, error) {
 		return userData, token, err
 	}
 	return userData, token, nil
+}
+
+func (uu *UserUsecase) RefreshToken(c *gin.Context) (string, string, error) {
+	t, rt, err := uu.repository.RefreshToken(c)
+	if err != nil {
+		return "", "", err
+	}
+	return t, rt, nil
 }

@@ -40,6 +40,7 @@ func main() {
 	server.POST("/create/user", UserController.CreateUser)
 	server.DELETE("/delete/user", model.VerifyTokenMiddleware, UserController.DeleteUser)
 	server.POST("/signin", UserController.LogIn)
+	server.POST("/refresh_token", UserController.RefreshToken)
 
 	server.Run(":8000")
 }

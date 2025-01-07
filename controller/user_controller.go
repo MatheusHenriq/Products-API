@@ -174,3 +174,18 @@ func (u *UserController) LogIn(ctx *gin.Context) {
 	})
 
 }
+
+func (u *UserController) RefreshToken(ctx *gin.Context) {
+	t, rt, err := u.userUsecase.RefreshToken(ctx)
+	if err != nil {
+		response := model.Response{
+			Message: "Error try to refresh token",
+		}
+		ctx.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	ctx.JSON(http.StatusOK, map[string]string{
+		"access_token":  t,
+		"refresh_token": rt,
+	})
+}
